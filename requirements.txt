@@ -1,0 +1,37 @@
+# StreamChat Overlay — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core web framework
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+
+# WebSockets
+websockets==12.0
+
+# HTTP client (async)
+aiohttp==3.9.5
+
+# YouTube Live Chat
+pytchat==0.5.5
+
+# HTML parsing (Rumble scraping)
+beautifulsoup4==4.12.3
+lxml==5.2.2
+
+# Templating
+jinja2==3.1.4
+
+# Static files
+aiofiles==23.2.1
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Production ASGI server extras
+httptools==0.6.1
+uvloop==0.19.0; sys_platform != "win32"
+
+# ── Instagram Live (browser automation) ──────────────────────────────────────
+# After pip install, run: playwright install chromium
+playwright==1.44.0

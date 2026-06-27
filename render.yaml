@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: streamchat-overlay
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: YOUTUBE_VIDEO_ID
+        sync: false
+      - key: TWITCH_CHANNEL
+        sync: false
+      - key: TWITCH_OAUTH_TOKEN
+        sync: false
+      - key: KICK_CHANNEL
+        sync: false
+      - key: RUMBLE_STREAM_URL
+        sync: false
+      - key: FACEBOOK_ACCESS_TOKEN
+        sync: false
+      - key: FACEBOOK_VIDEO_ID
+        sync: false
+      - key: INSTAGRAM_ENABLED
+        value: "false"
+    healthCheckPath: /health
+    autoDeploy: true
