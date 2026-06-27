@@ -46,7 +46,14 @@ class KickAdapter(BaseAdapter):
             timeout=15.0,
             follow_redirects=True,
         )
-        await self._fetch_channel_info()
+        # Allow hardcoding chatroom ID via env var to bypass API/scrape blocks
+        import os
+        hardcoded = os.getenv("KICK_CHATROOM_ID")
+        if hardcoded:
+            self._chatroom_id = int(hardcoded)
+            logger.info(f"[Kick] Using hardcoded chatroom ID: {self._chatroom_id}")
+        else:
+            await self._fetch_channel_info()
 
     async def _fetch_channel_info(self):
         # Try API first
