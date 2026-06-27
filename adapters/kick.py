@@ -1,11 +1,12 @@
 """
 Kick Chat Adapter — connects to Kick's Pusher-based WebSocket.
-Uses httpx (pure-Python) for REST calls; websockets for real-time chat.
+Fetches chatroom ID via page scrape if API returns 403.
 """
 
 import asyncio
 import json
 import logging
+import re
 import time
 from typing import Optional
 
@@ -19,6 +20,12 @@ logger = logging.getLogger("streamchat.adapter.kick")
 
 KICK_API_BASE = "https://kick.com/api/v2"
 KICK_WS_URI = "wss://ws-us2.pusher.com/app/eb1d5f283081a78b932c?protocol=7&client=js&version=7.6.0&flash=false"
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+}
 
 
 class KickAdapter(BaseAdapter):
@@ -35,23 +42,47 @@ class KickAdapter(BaseAdapter):
     async def _connect(self):
         logger.info(f"[Kick] Connecting to channel: {self.channel}")
         self._client = httpx.AsyncClient(
-            headers={"User-Agent": "StreamChatOverlay/1.0"},
-            timeout=10.0,
+            headers=HEADERS,
+            timeout=15.0,
             follow_redirects=True,
         )
         await self._fetch_channel_info()
 
     async def _fetch_channel_info(self):
+        # Try API first
         try:
             resp = await self._client.get(f"{KICK_API_BASE}/channels/{self.channel}")
             if resp.status_code == 200:
                 data = resp.json()
                 self._chatroom_id = data.get("chatroom", {}).get("id")
-                logger.info(f"[Kick] Chatroom ID: {self._chatroom_id}")
+                logger.info(f"[Kick] Chatroom ID via API: {self._chatroom_id}")
+                return
             else:
-                logger.warning(f"[Kick] Channel API returned {resp.status_code}")
+                logger.warning(f"[Kick] API returned {resp.status_code}, trying page scrape...")
         except Exception as e:
-            logger.error(f"[Kick] Failed to fetch channel info: {e}")
+            logger.warning(f"[Kick] API request failed: {e}, trying page scrape...")
+
+        # Fallback: scrape chatroom ID from the channel page
+        try:
+            resp = await self._client.get(f"https://kick.com/{self.channel}")
+            if resp.status_code == 200:
+                # Look for chatroom id in page JSON/script tags
+                match = re.search(r'"chatroom"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', resp.text)
+                if match:
+                    self._chatroom_id = int(match.group(1))
+                    logger.info(f"[Kick] Chatroom ID via scrape: {self._chatroom_id}")
+                    return
+                # Alternative pattern
+                match = re.search(r'"chatroom_id"\s*:\s*(\d+)', resp.text)
+                if match:
+                    self._chatroom_id = int(match.group(1))
+                    logger.info(f"[Kick] Chatroom ID via scrape (alt): {self._chatroom_id}")
+                    return
+                logger.error("[Kick] Could not find chatroom ID in page HTML")
+            else:
+                logger.error(f"[Kick] Page scrape returned {resp.status_code}")
+        except Exception as e:
+            logger.error(f"[Kick] Page scrape failed: {e}")
 
     async def _listen(self):
         if self._chatroom_id:
@@ -61,11 +92,11 @@ class KickAdapter(BaseAdapter):
                 logger.warning(f"[Kick] WebSocket failed ({e}), falling back to polling")
                 await self._listen_polling()
         else:
-            logger.warning("[Kick] No chatroom ID — polling mode")
-            await self._listen_polling()
+            logger.error("[Kick] Could not get chatroom ID — cannot connect")
+            raise RuntimeError("No chatroom ID")
 
     async def _listen_websocket(self):
-        logger.info("[Kick] Starting WebSocket listener...")
+        logger.info(f"[Kick] Starting WebSocket listener for chatroom {self._chatroom_id}...")
         async with websockets.connect(KICK_WS_URI, ping_interval=20) as ws:
             self._ws = ws
             channel_name = f"chatrooms.{self._chatroom_id}.v2"
