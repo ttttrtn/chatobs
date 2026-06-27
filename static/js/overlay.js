@@ -9,7 +9,6 @@
     wsPath: "/ws",
   };
 
-  // Inline SVG icons — real platform logos
   const PLATFORM_SVGS = {
     youtube: `<svg viewBox="0 0 24 24" fill="#FF0000" xmlns="http://www.w3.org/2000/svg"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>`,
     twitch: `<svg viewBox="0 0 24 24" fill="#9146FF" xmlns="http://www.w3.org/2000/svg"><path d="M11.6 6H13v4.5h-1.4V6zm3.8 0H17v4.5h-1.4V6zM2.4 0L1 3.4V21h5.8v3h3.4l3-3H17l6-6V0H2.4zm18.2 13.8-3 3h-4.5l-3 3v-3H5.4V2h15.2v11.8z"/></svg>`,
@@ -22,7 +21,6 @@
 
   let ws = null;
   let reconnectDelay = CONFIG.reconnectDelay;
-  let reconnectTimer = null;
   const feed = document.getElementById("chat-feed");
 
   function connect() {
@@ -39,14 +37,13 @@
 
     ws.onmessage = (e) => {
       if (e.data === "pong") return;
-      try { renderMessage(JSON.parse(e.data)); }
-      catch (_) {}
+      try { renderMessage(JSON.parse(e.data)); } catch (_) {}
     };
 
     ws.onerror = () => {};
     ws.onclose = () => {
       clearInterval(ws._ping);
-      reconnectTimer = setTimeout(() => {
+      setTimeout(() => {
         connect();
         reconnectDelay = Math.min(reconnectDelay * 1.5, CONFIG.maxReconnectDelay);
       }, reconnectDelay);
@@ -64,20 +61,20 @@
     const el = document.createElement("div");
     el.className = `chat-msg platform-${platform}`;
 
-    // Platform SVG icon
+    // All inline: [icon] Username [badges]: message text
+    const content = document.createElement("div");
+    content.className = "msg-content";
+
+    // Platform icon — small, inline before username
     const iconWrap = document.createElement("span");
     iconWrap.className = "platform-icon";
     iconWrap.innerHTML = PLATFORM_SVGS[platform] || PLATFORM_SVGS.system;
-    el.appendChild(iconWrap);
-
-    // Text content
-    const content = document.createElement("div");
-    content.className = "msg-content";
+    content.appendChild(iconWrap);
 
     // Username
     const nameEl = document.createElement("span");
     nameEl.className = "msg-username";
-    nameEl.textContent = username + ":";
+    nameEl.textContent = " " + username;
     content.appendChild(nameEl);
 
     // Badges
@@ -93,13 +90,12 @@
       content.appendChild(badgeContainer);
     }
 
-    // Message text
+    // Colon + message
     const textEl = document.createElement("span");
     textEl.className = "msg-text";
-    textEl.textContent = " " + messageText;
+    textEl.textContent = ": " + messageText;
     content.appendChild(textEl);
 
-    // Superchat
     if (isSuperchat && superAmount) {
       const amt = document.createElement("span");
       amt.className = "superchat-amount";
@@ -109,10 +105,7 @@
 
     el.appendChild(content);
     feed.appendChild(el);
-
-    // Auto-scroll to bottom
     feed.scrollTop = feed.scrollHeight;
-
     trimMessages();
 
     if (CONFIG.fadeOutDelay > 0) {
