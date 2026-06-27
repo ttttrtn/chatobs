@@ -19,7 +19,7 @@ from adapters import BaseAdapter
 logger = logging.getLogger("streamchat.adapter.kick")
 
 KICK_API_BASE = "https://kick.com/api/v2"
-KICK_WS_URI = "wss://ws-us2.pusher.com/app/eb1d5f283081a78b932c?protocol=7&client=js&version=7.6.0&flash=false"
+KICK_WS_URI = "wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=7.6.0&flash=false"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
