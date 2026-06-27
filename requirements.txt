@@ -1,37 +1,40 @@
 # StreamChat Overlay — Python Dependencies
 # Install with: pip install -r requirements.txt
 #
-# NOTE: httptools and uvloop do not support Python 3.14+ yet.
-# uvicorn[standard] pulls them in automatically, so we install
-# uvicorn without extras and let it use its pure-Python fallbacks.
+# Python 3.14 compatibility notes:
+#   - aiohttp is REMOVED: its greenlet dependency doesn't build on 3.14.
+#     Replaced with httpx (pure Python, zero C extensions).
+#   - uvicorn[standard] is REPLACED with plain uvicorn:
+#     the [standard] extra pulls in httptools + uvloop which also fail on 3.14.
+#   - All other packages either ship pre-built wheels for 3.14 or are pure Python.
 
-# Core web framework
+# ── Core web framework ────────────────────────────────────────────────────────
 fastapi==0.111.0
-uvicorn==0.29.0          # plain install — NO [standard] extra
+uvicorn==0.29.0          # plain — no [standard] extra (avoids httptools/uvloop)
 python-multipart==0.0.9
 
-# WebSockets
+# ── Async HTTP (replaces aiohttp — pure Python, no C extensions) ─────────────
+httpx==0.27.0
+
+# ── WebSockets ────────────────────────────────────────────────────────────────
 websockets==12.0
 
-# HTTP client (async)
-aiohttp==3.9.5
-
-# YouTube Live Chat
+# ── YouTube Live Chat ─────────────────────────────────────────────────────────
 pytchat==0.5.5
 
-# HTML parsing (Rumble scraping)
+# ── HTML parsing (Rumble scraping) ────────────────────────────────────────────
 beautifulsoup4==4.12.3
 lxml==5.2.2
 
-# Templating
+# ── Templating ────────────────────────────────────────────────────────────────
 jinja2==3.1.4
 
-# Static files
+# ── Static files ──────────────────────────────────────────────────────────────
 aiofiles==23.2.1
 
-# Environment variables
+# ── Environment variables ─────────────────────────────────────────────────────
 python-dotenv==1.0.1
 
 # ── Instagram Live (browser automation) ──────────────────────────────────────
-# After pip install, run: playwright install chromium
+# After pip install, also run: playwright install chromium
 playwright==1.44.0
