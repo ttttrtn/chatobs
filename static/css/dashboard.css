@@ -1,0 +1,133 @@
+/* StreamChat Dashboard CSS */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0d1117;
+  --surface:  #161b22;
+  --border:   #30363d;
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --accent:   #58a6ff;
+
+  --yt:   #FF0000;
+  --tw:   #9146FF;
+  --ki:   #53FC18;
+  --ru:   #FF6700;
+  --fb:   #1877F2;
+  --ig:   #E1306C;
+}
+
+html, body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; height: 100%; }
+
+/* Header */
+.dash-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.dash-logo { display: flex; align-items: center; gap: 8px; }
+.logo-icon { font-size: 22px; }
+.logo-text { font-size: 18px; font-weight: 700; color: var(--accent); }
+.logo-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.dash-status-bar { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #3fb950; box-shadow: 0 0 6px #3fb950; }
+.status-dot.disconnected { background: #f85149; box-shadow: 0 0 6px #f85149; }
+.sep { color: var(--border); }
+
+/* Main 3-column */
+.dash-main {
+  display: grid; grid-template-columns: 240px 1fr 300px;
+  height: calc(100vh - 57px); overflow: hidden;
+}
+
+.panel {
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.panel:last-child { border-right: none; }
+.panel-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted);
+  padding: 14px 16px 8px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.preview-badge {
+  font-size: 10px; font-weight: 400; text-transform: none; letter-spacing: 0;
+  color: var(--muted);
+}
+.preview-badge code { color: var(--accent); }
+
+/* Adapters list */
+.adapter-list { padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+.adapter-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+}
+.adapter-dot { width: 8px; height: 8px; border-radius: 50%; background: #3fb950; flex-shrink: 0; }
+.adapter-dot.off { background: var(--border); }
+.adapter-dot.error { background: #f85149; }
+.adapter-info { flex: 1; min-width: 0; }
+.adapter-name { font-size: 12px; font-weight: 600; }
+.adapter-stat { font-size: 10px; color: var(--muted); }
+.adapter-stop-btn {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer;
+}
+.adapter-stop-btn:hover { border-color: #f85149; color: #f85149; }
+
+/* Preview frame */
+.preview-panel { flex: 1; }
+.preview-frame-wrap {
+  flex: 1; background: #111; display: flex; align-items: stretch;
+  position: relative; overflow: hidden;
+}
+.preview-frame-wrap::before {
+  content: "OBS PREVIEW";
+  position: absolute; top: 10px; right: 10px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.2); z-index: 1;
+}
+#preview-frame {
+  flex: 1; border: none; background: transparent;
+  /* Simulate OBS dark background */
+  background: #0a0a0a;
+}
+
+/* Controls panel */
+.controls-panel { overflow-y: auto; }
+.control-group { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.control-group label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.input-row { display: flex; gap: 6px; }
+.input-row input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--text);
+  outline: none;
+}
+.input-row input:focus { border-color: var(--accent); }
+.input-row button {
+  background: var(--accent); color: #0d1117;
+  border: none; border-radius: 6px; padding: 6px 12px;
+  font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.input-row button:hover { opacity: 0.85; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+/* Recent feed */
+.recent-feed { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.empty-state { font-size: 12px; color: var(--muted); padding: 16px; text-align: center; }
+.recent-msg {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; font-size: 12px; border-left: 3px solid var(--platform-c, var(--border));
+}
+.recent-msg .r-user { font-weight: 700; color: var(--platform-c); }
+.recent-msg .r-text { color: var(--muted); margin-top: 2px; }
+.recent-msg[data-platform="youtube"] { --platform-c: var(--yt); }
+.recent-msg[data-platform="twitch"]  { --platform-c: var(--tw); }
+.recent-msg[data-platform="kick"]    { --platform-c: var(--ki); }
+.recent-msg[data-platform="rumble"]  { --platform-c: var(--ru); }
+.recent-msg[data-platform="facebook"]{ --platform-c: var(--fb); }
+.recent-msg[data-platform="instagram"]{ --platform-c: var(--ig); }
